@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Мои формы - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <h1>Мои формы</h1>
+    
+    <div class="stats-grid mb-4">
+        <div class="stat-card glass">
+            <h4>Всего</h4>
+            <div class="stat-value">{{ stats.total }}</div>
+        </div>
+        <div class="stat-card glass">
+            <h4>Принятые</h4>
+            <div class="stat-value text-success">{{ stats.accepted }}</div>
+        </div>
+        <div class="stat-card glass">
+            <h4>Ожидающие</h4>
+            <div class="stat-value text-warning">{{ stats.pending }}</div>
+        </div>
+    </div>
+
+    <a href="{{ url_for('submit_form') }}" class="login-button mb-4" style="width: 100%;">Отправить форму</a>
+
+    <div class="submissions-list">
+        {% for sub in submissions %}
+        <div class="submission-item glass mb-3 p-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="date">{{ sub.submitted_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                <span class="status-badge status-{{ sub.status.lower() }}">{{ sub.status }}</span>
+            </div>
+            <div class="content-preview mt-2">
+                {{ sub.content[:100] }}{% if sub.content|length > 100 %}...{% endif %}
+            </div>
+            {% if sub.status != 'Pending' %}
+            <div class="accepted-info mt-2">
+                <small>Кто принял: {{ sub.accepter.username if sub.accepter else '---' }} | Дата: {{ sub.accepted_date.strftime('%Y-%m-%d') if sub.accepted_date else '---' }}</small>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <p>Вы еще не отправляли форм.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    .stat-card {
+        padding: 15px;
+        text-align: center;
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.05);
+    }
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    .submission-item {
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.03);
+        text-align: left;
+    }
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+    .status-pending { background: #ffc107; color: #000; }
+    .status-accepted { background: #28a745; color: #fff; }
+    .status-rejected { background: #dc3545; color: #fff; }
+    .text-success { color: #28a745; }
+    .text-warning { color: #ffc107; }
+    .mb-4 { margin-bottom: 1.5rem; }
+    .mb-3 { margin-bottom: 1rem; }
+    .p-3 { padding: 1rem; }
+    .mt-2 { margin-top: 0.5rem; }
+    .d-flex { display: flex; }
+    .justify-content-between { justify-content: space-between; }
+    .align-items-center { align-items: center; }
+</style>
+{% endblock %}

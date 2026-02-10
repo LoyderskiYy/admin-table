@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Home - Admin Panel
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        {% if user %}
+        <h1>Welcome, {{ user.username }}#{{ user.discriminator }}!</h1>
+        <p>Your Admin Level: {{ session.admin_level }}</p>
+        {% else %}
+        <h1>Welcome to the Admin Panel!</h1>
+        <p>Please log in with Discord.</p>
+        <a href="{{ url_for("login") }}" class="login-button">Login with Discord</a>
+        {% endif %}
+    </div>
+{% endblock %}

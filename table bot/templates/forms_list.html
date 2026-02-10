@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Список форм - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <h1>Список форм</h1>
+    
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Дата отправки</th>
+                    <th>От кого</th>
+                    <th>Содержимое</th>
+                    <th>Статус</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in submissions %}
+                <tr>
+                    <td>{{ sub.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>{{ sub.user.username }}</td>
+                    <td>
+                        <div class="content-cell" title="{{ sub.content }}">
+                            {{ sub.content[:50] }}{% if sub.content|length > 50 %}...{% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="status-badge status-{{ sub.status.lower() }}">{{ sub.status }}</span>
+                    </td>
+                    <td>
+                        {% if sub.status == 'Pending' %}
+                        <a href="{{ url_for('process_form', form_id=sub.id, action='accept') }}" class="btn-sm btn-success">Принять</a>
+                        <a href="{{ url_for('process_form', form_id=sub.id, action='reject') }}" class="btn-sm btn-danger">Отклонить</a>
+                        {% else %}
+                        <small>Принял: {{ sub.accepter.username if sub.accepter else '---' }}</small>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">Нет отправленных форм.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .admin-table th, .admin-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 10px;
+        font-size: 0.75rem;
+    }
+    .status-pending { background: #ffc107; color: #000; }
+    .status-accepted { background: #28a745; color: #fff; }
+    .status-rejected { background: #dc3545; color: #fff; }
+    .btn-sm {
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        margin-right: 5px;
+    }
+    .btn-success { background: #28a745; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+    .content-cell {
+        max-width: 200px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+{% endblock %}

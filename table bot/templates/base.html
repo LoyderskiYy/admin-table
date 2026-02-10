@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for("static", filename="style.css") }}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="navbar-brand">Admin Dashboard</div>
+        <ul class="navbar-nav">
+            {% if session.get("user_id") %}
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">Администрация</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for("inactive_request_form") }}">Взятие неактива</a>
+                        <a href="{{ url_for("meeting_skip_form") }}">Пропуск собрания</a>
+                        <a href="{{ url_for("shop_page") }}">Магазин (временно недоступен)</a>
+                        <a href="{{ url_for("admin_list") }}">Список администрации</a>
+                        {% if session.get("admin_level", 0) >= 7 %}
+                        <a href="{{ url_for("inactive_requests_panel") }}">Панель заявок (Неактив)</a>
+                        <a href="{{ url_for("meeting_skip_panel") }}">Панель заявок (Собрания)</a>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#" class="nav-link">Формы</a>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for("my_forms") }}">Мои формы</a>
+                        {% if session.get("admin_level", 0) >= 7 %}
+                        <a href="{{ url_for("forms_list") }}">Список форм</a>
+                        {% endif %}
+                    </div>
+                </li>
+                <li class="nav-item"><a href="{{ url_for("logout") }}" class="nav-link">Выйти ({{ session.username }})</a></li>
+            {% else %}
+                <li class="nav-item"><a href="{{ url_for("login") }}" class="nav-link">Войти с Discord</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    <div class="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

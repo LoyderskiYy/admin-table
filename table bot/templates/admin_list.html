@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Список администрации - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <h1>Список администрации</h1>
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Пользователь</th>
+                    <th>Должность</th>
+                    <th>Баллы</th>
+                    <th>Выговоры</th>
+                    <th>Предупреждения</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for admin in admins %}
+                <tr onclick="window.location='{{ url_for('admin_profile', user_id=admin.user.id) }}'">
+                    
+                    <td>
+                        <span class="prefix">[{{ admin.prefix or '---' }}]</span>
+                        <span class="username">{{ admin.user.username }}</span>
+                    </td>
+                    <td>{{ admin.position or '---' }} (Lvl {{ admin.user.admin_level }})</td>
+                    <td>{{ admin.points }}</td>
+                    <td>{{ admin.reprimands }}</td>
+                    <td>{{ admin.warnings }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .admin-table th, .admin-table td {
+        padding: 15px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .admin-table th {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+        font-weight: 600;
+    }
+    .admin-table tr {
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+    }
+    .admin-table tr:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .prefix {
+        color: #6e8efb;
+        font-weight: bold;
+        margin-right: 5px;
+    }
+    .username {
+        color: #ffffff;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+</style>
+{% endblock %}

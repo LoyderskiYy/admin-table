@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Магазин - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Магазин</h1>
+    <div class="status-badge">Временно недоступно</div>
+    <p>Данный раздел находится в разработке. Пожалуйста, зайдите позже.</p>
+</div>
+
+<style>
+    .status-badge {
+        background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+        color: #721c24;
+        padding: 10px 20px;
+        border-radius: 20px;
+        display: inline-block;
+        font-weight: bold;
+        margin: 20px 0;
+        box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
+    }
+</style>
+{% endblock %}

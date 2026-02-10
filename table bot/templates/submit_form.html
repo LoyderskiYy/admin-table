@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Отправить форму - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <h1>Отправить форму</h1>
+    <form method="POST">
+        <div class="form-group" style="text-align: left;">
+            <label for="content">Содержимое формы (свободный ввод)</label>
+            <textarea id="content" name="content" class="form-control" rows="15" required placeholder="Введите текст формы здесь..."></textarea>
+        </div>
+        <button type="submit" class="login-button" style="width: 100%;">Отправить форму</button>
+    </form>
+</div>
+
+<style>
+    .form-group label {
+        display: block;
+        margin-bottom: 10px;
+        color: #ffffff;
+        font-weight: bold;
+    }
+    .form-control {
+        width: 100%;
+        padding: 15px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(0, 0, 0, 0.3);
+        color: #ffffff;
+        box-sizing: border-box;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 1rem;
+        line-height: 1.5;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #6e8efb;
+        box-shadow: 0 0 10px rgba(110, 142, 251, 0.3);
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Пропуск собрания - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Пропуск собрания</h1>
+    <form method="POST">
+        <div class="form-group">
+            <label for="username">Пользователь</label>
+            <input type="text" id="username" class="form-control" value="{{ username }}" disabled>
+        </div>
+        <div class="form-group">
+            <label for="reason">Причина пропуска</label>
+            <textarea id="reason" name="reason" class="form-control" rows="4" required></textarea>
+        </div>
+        <button type="submit" class="login-button">Отправить заявку</button>
+    </form>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #ffffff;
+    }
+    .form-control {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.05);
+        color: #ffffff;
+        box-sizing: border-box;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #6e8efb;
+    }
+    textarea.form-control {
+        resize: vertical;
+    }
+</style>
+{% endblock %}

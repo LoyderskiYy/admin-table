@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Панель заявок - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+    <h1>Панель заявок (Неактив)</h1>
+    
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>От кого</th>
+                    <th>Период</th>
+                    <th>Причина</th>
+                    <th>Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr>
+                    <td>{{ req.submitted_at.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ req.user.username }}</td>
+                    <td>{{ req.start_date }} - {{ req.end_date }}</td>
+                    <td>{{ req.reason }}</td>
+                    <td>
+                        <a href="{{ url_for('process_inactive_request', request_id=req.id, action='approve') }}" class="btn-sm btn-success">Одобрить</a>
+                        <a href="{{ url_for('process_inactive_request', request_id=req.id, action='deny') }}" class="btn-sm btn-danger">Отказать</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">Нет активных заявок на неактив.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .admin-table {
+        width: 100%;
+        border-collapse: collapse;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .admin-table th, .admin-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .btn-sm {
+        padding: 5px 10px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        margin-right: 5px;
+    }
+    .btn-success { background: #28a745; color: white; }
+    .btn-danger { background: #dc3545; color: white; }
+</style>
+{% endblock %}
