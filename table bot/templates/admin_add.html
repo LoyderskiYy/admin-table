@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Назначение администратора — Admin Panel{% endblock %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 40px auto; padding: 0 20px;">
+  
+  <div style="margin-bottom: 30px; text-align: center;">
+    <h1 style="margin: 0; font-size: 2rem;">Назначение администратора</h1>
+    <p style="color: var(--muted); margin-top: 8px;">Заполните данные для создания или обновления профиля</p>
+  </div>
+
+  <form action="{{ url_for('admin_add') }}" method="POST" class="card" style="padding: 30px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
+    
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+      
+      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 250px;">
+          <label class="field-label">Discord Snowflake ID</label>
+          <div style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.4;">🆔</span>
+            <input type="text" name="discord_id" class="custom-input" placeholder="Напр: 1470790152766095414" required style="padding-left: 40px;">
+          </div>
+        </div>
+
+        <div style="flex: 1; min-width: 200px;">
+          <label class="field-label">Имя (отображаемое)</label>
+          <input type="text" name="username" class="custom-input" placeholder="Напр: John_Doe" required>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+        <div style="flex: 2; min-width: 200px;">
+          <label class="field-label">Должность</label>
+          <input type="text" name="position" class="custom-input" placeholder="Напр: ГС ГОС / Следящий">
+        </div>
+
+        <div style="flex: 1; min-width: 150px;">
+          <label class="field-label">Префикс</label>
+          <input type="text" name="prefix" class="custom-input" placeholder="Напр: ГС ГОС" required>
+        </div>
+      </div>
+
+      <div>
+        <label class="field-label">Причина назначения</label>
+        <textarea name="reason_appointed" class="custom-input" rows="2" placeholder="Напр: По результатам обзвона / Доверенное лицо" style="resize: none;" required></textarea>
+      </div>
+
+      <div style="margin-top: 10px;">
+    <label class="field-label">Социальные сети</label>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        
+        <div style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 14px;">💬</span>
+            <input type="text" name="discord_link" class="custom-input" placeholder="Discord (Name#0000)" style="padding-left: 40px;">
+        </div>
+
+        <div style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 14px;">✈️</span>
+            <input type="text" name="telegram_link" class="custom-input" placeholder="Telegram (@username)" style="padding-left: 40px;">
+        </div>
+
+        <div style="position: relative;">
+            <span style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); opacity: 0.5; font-size: 14px;">🔗</span>
+            <input type="text" name="vk_link" class="custom-input" placeholder="VK (vk.com/id)" style="padding-left: 40px;">
+        </div>
+
+    </div>
+</div>
+
+<hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 20px 0;">
+
+      <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.05); margin: 8px 0;">
+
+      <div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <label class="field-label" style="margin-bottom: 0;">Уровень полномочий</label>
+          <div id="level-preview" class="level-badge level-1" style="transition: all 0.3s ease; transform: scale(1.1);">Lvl 1</div>
+        </div>
+        
+        <input id="admin-level-range" type="range" name="admin_level" min="1" max="10" value="1" step="1" 
+               style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 5px; outline: none; accent-color: #6366f1;">
+        
+        <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 0.7rem; color: var(--muted); font-family: var(--mono);">
+          <span>MIN (1)</span>
+          <span>MAX (10)</span>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 10px;">
+        <button type="submit" class="button" style="flex: 2; padding: 14px; font-weight: 600;">
+          Добавить администратора
+        </button>
+        <a href="{{ url_for('admin_list') }}" class="button ghost" style="flex: 1; padding: 14px; text-align: center; border-radius: 12px; text-decoration: none; color: white;">
+          Назад к списку
+        </a>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<style>
+  .field-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .custom-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: white;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
+
+  .custom-input:focus {
+    outline: none;
+    border-color: #6366f1;
+    background: rgba(255, 255, 255, 0.07);
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    cursor: pointer;
+  }
+</style>
+
+<script>
+(function(){
+  const range = document.getElementById('admin-level-range');
+  const preview = document.getElementById('level-preview');
+
+  function updateLevel(val){
+    const lvl = parseInt(val, 10);
+    preview.className = 'level-badge level-' + lvl;
+    preview.textContent = 'Lvl ' + lvl;
+    preview.style.transform = 'scale(1.15)';
+    setTimeout(() => { preview.style.transform = 'scale(1.1)'; }, 100);
+  }
+
+  range.addEventListener('input', (e) => updateLevel(e.target.value));
+  updateLevel(range.value);
+})();
+</script>
+{% endblock %}

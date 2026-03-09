@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Мои отчёты — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    
+    <div class="stats-grid top-stats">
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label">Всего отчётов</span>
+                <span class="m-value">{{ stats.total }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label" style="color: #4ade80;">Одобрено</span>
+                <span class="m-value" style="color: #4ade80;">{{ stats.approved }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label" style="color: #fbbf24;">На рассмотрении</span>
+                <span class="m-value" style="color: #fbbf24;">{{ stats.pending }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label" style="color: #f87171;">Отклонено</span>
+                <span class="m-value" style="color: #f87171;">{{ stats.rejected }}</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="report-search" placeholder="Поиск по содержанию...">
+        </div>
+        <a href="{{ url_for('submit_report') }}" class="create-form-btn">
+            + Создать отчёт
+        </a>
+    </div>
+
+    <div class="card table-card">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Содержание отчёта</th>
+                        <th>Статус</th>
+                        <th>Проверил</th>
+                        <th>Комментарий</th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table-body">
+                    {% for report in reports %}
+                    <tr class="report-row">
+                        <td class="td-date">
+                            <div class="date-main">{{ report.submitted_at.strftime('%d.%m.%y') }}</div>
+                            <div class="date-sub">{{ report.submitted_at.strftime('%H:%M') }}</div>
+                        </td>
+                        <td class="td-content">
+                            <div class="content-text mono">
+                                {{ report.content[:100] }}{% if report.content|length > 100 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-pill status-{{ report.status.lower() }}">
+                                {% if report.status == 'Approved' %}Одобрено
+                                {% elif report.status == 'Pending' %}Ожидание
+                                {% elif report.status == 'Rejected' %}Отклонено
+                                {% else %}{{ report.status }}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if report.status != 'Pending' and report.reviewer %}
+                            <div class="accepter-info">
+                                {% if report.reviewer.avatar %}
+                                    <img src="https://cdn.discordapp.com/avatars/{{ report.reviewer.discord_id }}/{{ report.reviewer.avatar }}.png?size=64" 
+                                         class="u-avatar-sm" alt="AV">
+                                {% else %}
+                                    <div class="u-avatar-sm">{{ report.reviewer.username[0]|upper }}</div>
+                                {% endif %}
+                                <span>{{ report.reviewer.username }}</span>
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if report.comment %}
+                            <div class="comment-box">
+                                {{ report.comment }}
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-muted);">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state">
+                            <div class="empty-content">
+                                <span class="empty-icon">📊</span>
+                                <span>У вас пока нет отчётов</span>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    .top-stats { margin-bottom: 20px; }
+    .action-bar { display: flex; gap: 15px; margin-bottom: 20px; }
+    .search-box { 
+        flex: 1; 
+        display: flex; 
+        align-items: center; 
+        gap: 10px; 
+        background: rgba(255,255,255,0.03);
+        padding: 10px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--glass-border);
+    }
+    .search-box input {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 0.9rem;
+        width: 100%;
+        outline: none;
+    }
+    .search-box input::placeholder { color: var(--text-muted); }
+    .search-icon { font-size: 1rem; }
+    .create-form-btn {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        text-decoration: none;
+        padding: 12px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+        transition: all 0.3s ease;
+    }
+    .create-form-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 35px rgba(99, 102, 241, 0.4);
+    }
+    .table-card { overflow: hidden; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th {
+        text-align: left;
+        padding: 14px 16px;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        background: rgba(0,0,0,0.2);
+        border-bottom: 1px solid var(--glass-border);
+    }
+    td { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.03); }
+    .report-row:hover { background: rgba(255,255,255,0.02); }
+    .td-date { white-space: nowrap; }
+    .date-main { font-weight: 600; color: #fff; }
+    .date-sub { font-size: 0.75rem; color: var(--text-muted); }
+    .content-text { font-size: 0.85rem; color: #e2e8f0; }
+    .status-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+    .status-pending { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+    .status-approved { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+    .status-rejected { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+    .accepter-info { display: flex; align-items: center; gap: 8px; }
+    .u-avatar-sm {
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: white;
+    }
+    .u-avatar-sm img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
+    .comment-box {
+        background: rgba(99, 102, 241, 0.1);
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        color: #c7d2fe;
+        border-left: 3px solid #6366f1;
+    }
+    .empty-state { text-align: center; padding: 50px !important; }
+    .empty-content { display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--text-muted); }
+    .empty-icon { font-size: 2rem; }
+</style>
+
+<script>
+document.getElementById('report-search').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase();
+    const rows = document.querySelectorAll('.report-row');
+    rows.forEach(row => {
+        const content = row.querySelector('.content-text').textContent.toLowerCase();
+        row.style.display = content.includes(query) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

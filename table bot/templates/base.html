@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f0f1a;
+            --sidebar-border: rgba(255, 255, 255, 0.06);
+            --item-hover: rgba(255, 255, 255, 0.04);
+            --accent-color: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --danger-color: #ff3b5c;
+            --danger-glow: rgba(255, 59, 92, 0.25);
+            --success-color: #4ade80;
+            --success-glow: rgba(74, 222, 128, 0.25);
+            --info-color: #3b82f6;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: #080810;
+            color: var(--text-main);
+            display: flex;
+            min-height: 100vh;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99, 102, 241, 0.25), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 85, 247, 0.2), transparent),
+                radial-gradient(ellipse 50% 30% at 90% 0%, rgba(236, 72, 153, 0.15), transparent),
+                radial-gradient(ellipse 40% 40% at 0% 100%, rgba(59, 130, 246, 0.15), transparent),
+                linear-gradient(180deg, #080810 0%, #0c0c18 100%);
+            background-attachment: fixed;
+        }
+
+        /* --- СТИЛИ УВЕДОМЛЕНИЙ (FLASH MESSAGES) --- */
+        .flash-container {
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: none;
+        }
+
+        .flash-message {
+            pointer-events: auto;
+            min-width: 320px;
+            max-width: 420px;
+            background: linear-gradient(135deg, rgba(20, 19, 32, 0.95), rgba(15, 15, 26, 0.9));
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 18px 22px;
+            color: white;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.3s ease;
+        }
+
+        .flash-message:hover {
+            transform: translateX(-5px);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.5),
+                0 0 30px var(--accent-glow);
+        }
+
+        .flash-content { display: flex; align-items: center; gap: 14px; }
+        .flash-icon { 
+            font-size: 1.4rem; 
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .flash-text { font-size: 0.92rem; font-weight: 500; line-height: 1.4; }
+
+        .flash-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1.4rem;
+            padding: 4px;
+            line-height: 1;
+            transition: 0.2s;
+            border-radius: 8px;
+        }
+        .flash-close:hover { 
+            color: white; 
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .flash-success { 
+            border-left: 4px solid var(--success-color);
+        }
+        .flash-success .flash-icon {
+            background: var(--success-glow);
+        }
+        .flash-danger { 
+            border-left: 4px solid var(--danger-color); 
+        }
+        .flash-danger .flash-icon {
+            background: var(--danger-glow);
+        }
+        .flash-info { 
+            border-left: 4px solid var(--info-color); 
+        }
+        .flash-info .flash-icon {
+            background: rgba(59, 130, 246, 0.2);
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .flash-out { transform: translateX(120%); opacity: 0; }
+
+        /* САЙДБАР */
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, rgba(15, 15, 26, 0.95), rgba(8, 8, 16, 0.98));
+            border-right: 1px solid var(--sidebar-border);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 1000;
+            box-shadow: 
+                4px 0 30px rgba(0, 0, 0, 0.3),
+                0 0 60px rgba(99, 102, 241, 0.05);
+        }
+
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            background: radial-gradient(ellipse 100% 80% at 50% -30%, rgba(99, 102, 241, 0.2), transparent);
+            pointer-events: none;
+            animation: sidebarGlow 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes sidebarGlow {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .user-profile-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+            margin: 15px 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .user-profile {
+            padding: 14px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.01));
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(10px);
+        }
+
+        .user-profile-link:hover .user-profile {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-3px);
+            box-shadow: 
+                0 8px 30px rgba(0, 0, 0, 0.3),
+                0 0 20px var(--accent-glow);
+        }
+
+        .user-avatar {
+            width: 46px;
+            height: 46px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--accent-color), #a855f7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: white;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            flex-shrink: 0;
+            box-shadow: 0 4px 15px var(--accent-glow);
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .user-info .username {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+
+        .level-tag {
+            font-size: 0.65rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .level-tag::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--success-color);
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .nav-group { margin-bottom: 12px; }
+
+        .nav-group-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            transition: 0.2s;
+        }
+
+        .nav-group-title:hover { color: var(--text-main); background: var(--item-hover); }
+
+        .nav-sub-menu {
+            padding: 4px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .nav-sub-link {
+            padding: 12px 16px;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-sub-link::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            background: var(--accent-color);
+            border-radius: 0 4px 4px 0;
+            transition: width 0.2s ease;
+            opacity: 0;
+        }
+
+        .nav-sub-link:hover {
+            color: #fff;
+            background: var(--item-hover);
+            padding-left: 20px;
+        }
+
+        .nav-sub-link:hover::before {
+            width: 3px;
+            height: 60%;
+            opacity: 1;
+        }
+
+        .nav-sub-link.active {
+            color: #fff;
+            background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.08));
+            border-left: none;
+            border-radius: 12px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .nav-sub-link.active::before {
+            width: 4px;
+            height: 70%;
+            opacity: 1;
+            background: var(--accent-color);
+        }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--sidebar-border);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .logout-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, rgba(255, 59, 92, 0.1), rgba(255, 59, 92, 0.05));
+            color: var(--danger-color);
+            border: 1px solid rgba(255, 59, 92, 0.2);
+            border-radius: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 0.88rem;
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .logout-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 59, 92, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger-color);
+            color: white;
+            transform: scale(0.98);
+            box-shadow: 0 8px 25px var(--danger-glow);
+        }
+
+        .logout-btn:hover::before {
+            left: 100%;
+        }
+
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            padding: 40px;
+            background: 
+                radial-gradient(ellipse 60% 40% at 10% 0%, rgba(99, 102, 241, 0.12), transparent),
+                radial-gradient(ellipse 50% 30% at 90% 100%, rgba(168, 85, 247, 0.08), transparent),
+                radial-gradient(ellipse 40% 30% at 50% 50%, rgba(236, 72, 153, 0.05), transparent);
+            position: relative;
+            animation: contentGlow 10s ease-in-out infinite alternate;
+        }
+
+        @keyframes contentGlow {
+            0% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+            50% { background-position: 20% 20%, 80% 80%, 60% 40%; }
+            100% { background-position: 0% 0%, 100% 100%, 50% 50%; }
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent);
+        }
+
+        .content-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .sidebar { 
+                transform: translateX(-100%);
+                transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .main-content { margin-left: 0; padding: 20px; }
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(99, 102, 241, 0.3);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(99, 102, 241, 0.5);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="flash-container" id="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category if category != 'message' else 'info' }}">
+                        <div class="flash-content">
+                            <span class="flash-icon">
+                                {% if category == 'success' %}✅{% elif category == 'danger' %}❌{% else %}ℹ️{% endif %}
+                            </span>
+                            <span class="flash-text">{{ message }}</span>
+                        </div>
+                        <button class="flash-close" onclick="this.parentElement.classList.add('flash-out')">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <aside class="sidebar">
+        {% if session.get("user_id") %}
+        
+        <a href="{{ url_for('index') }}" class="user-profile-link">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    {% if session.get("avatar") %}
+                        <img src="https://cdn.discordapp.com/avatars/{{ session.get('discord_id') }}/{{ session.get('avatar') }}.png?size=128" alt="AV">
+                    {% else %}
+                        <span style="font-size: 1.2rem;">{{ (session.get("username") or "A")[0] | upper }}</span>
+                    {% endif %}
+                </div>
+                <div class="user-info">
+                    <span class="username">{{ session.get("username", "Admin") }}</span>
+                    {% if session.get("admin_level") %}
+                        <span class="level-tag">Lvl {{ session.admin_level }} Admin</span>
+                    {% endif %}
+                </div>
+                <svg style="width:14px; height:14px; margin-left:auto; opacity:0.3;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7-7"/>
+                </svg>
+            </div>
+        </a>
+
+        <nav class="sidebar-nav">
+            <div class="nav-group">
+                <div class="nav-group-title">
+                    <span>🛡️ Управление</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="nav-sub-menu">
+                    <a href="{{ url_for('admin_list') }}" class="nav-sub-link"><span>👥</span> Список админов</a>
+                    <a href="{{ url_for('shop') }}" class="nav-sub-link"><span>🛒</span> Магазин баллов</a>
+                    <a href="{{ url_for('inactive_request_form') }}" class="nav-sub-link"><span>⏳</span> Взятие неактива</a>
+                    <a href="{{ url_for('meeting_skip_form') }}" class="nav-sub-link"><span>📅</span> Пропуск собрания</a>
+                    
+                    {% if session.get("admin_level", 0)|int >= 7 %}
+                        <div style="height: 1px; background: var(--sidebar-border); margin: 8px 10px;"></div>
+                        <a href="{{ url_for('inactive_requests_panel') }}" class="nav-sub-link"><span>📊</span> Панель (Неактив)</a>
+                        <a href="{{ url_for('meeting_skip_panel') }}" class="nav-sub-link"><span>🔔</span> Панель (Собрания)</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">
+                    <span>📝 Формы</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="nav-sub-menu">
+                    <a href="{{ url_for('my_forms') }}" class="nav-sub-link"><span>📂</span> Мои формы</a>
+                    {% if session.get("admin_level", 0)|int >= 7 %}
+                        <a href="{{ url_for('forms_list') }}" class="nav-sub-link"><span>🗃️</span> Все формы</a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="nav-group">
+                <div class="nav-group-title">
+                    <span>📊 Отчёты</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:14px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+                <div class="nav-sub-menu">
+                    <a href="{{ url_for('my_reports') }}" class="nav-sub-link"><span>📂</span> Мои отчёты</a>
+                    {% if session.get("admin_level", 0)|int >= 7 %}
+                        <a href="{{ url_for('reports_list') }}" class="nav-sub-link"><span>🗃️</span> Все отчёты</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div style="display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; opacity: 0.5; font-family: monospace; font-size: 0.65rem;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>CLIENT</span>
+                    <span>1.1-b17</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>BUILD</span>
+                    <span>2026.02.11</span>
+                </div>
+            </div>
+            <a href="{{ url_for('logout') }}" class="logout-btn">
+                Выйти из системы
+            </a>
+        </div>
+
+        {% else %}
+        <div style="padding: 24px; text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 10px;">🔐</div>
+            <h3 style="font-size: 1rem; margin-bottom: 20px;">Доступ ограничен</h3>
+            <a href="{{ url_for('login') }}" class="logout-btn" style="background: var(--accent-color); color: white; border: none;">
+                Войти через Discord
+            </a>
+        </div>
+        {% endif %}
+    </aside>
+
+    <main class="main-content">
+        <div class="content-container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <script>
+        // Логика авто-скрытия уведомлений
+        document.addEventListener('DOMContentLoaded', () => {
+            const alerts = document.querySelectorAll('.flash-message');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    alert.classList.add('flash-out');
+                    setTimeout(() => alert.remove(), 500);
+                }, 5000);
+            });
+        });
+
+        // Логика сайдбара - раскрытие/скрытие групп меню
+        document.querySelectorAll('.nav-group-title').forEach(title => {
+            title.addEventListener('click', () => {
+                const subMenu = title.nextElementSibling;
+                const arrow = title.querySelector('svg');
+                
+                if (subMenu.style.display === 'none') {
+                    subMenu.style.display = 'flex';
+                    if (arrow) arrow.style.transform = 'rotate(180deg)';
+                } else {
+                    subMenu.style.display = 'none';
+                    if (arrow) arrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        });
+
+        // Подсветка активного пункта меню
+        const currentPath = window.location.pathname;
+        document.querySelectorAll('.nav-sub-link').forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    </script>
+</body>
+</html>

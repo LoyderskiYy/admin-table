@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Пропуск собрания - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="form-main-container">
+    <div class="form-card">
+        <div class="header-icon-box purple">
+            <img src="https://cdn-icons-png.flaticon.com/512/3652/3652191.png" alt="icon" style="width: 32px; filter: brightness(1.2);">
+        </div>
+        
+        <h1 class="form-title">Пропуск собрания</h1>
+        <p class="form-info-text">ℹ Выберите собрание и укажите причину пропуска</p>
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="username">Администратор</label>
+                <div class="input-inner disabled">
+                    <span class="field-icon">👤</span>
+                    <input type="text" id="username" class="form-control-clean" value="{{ username }}" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="meeting_type">Собрание</label>
+                <div class="input-inner">
+                    <span class="field-icon">📅</span>
+                    <select id="meeting_type" name="meeting_type" class="form-control-clean">
+                        <option value="" disabled selected>Выберите собрание</option>
+                        <option value="weekly">Еженедельное собрание</option>
+                        <option value="emergency">Чрезвычайное собрание</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="reason">Причина пропуска <span class="req">*</span></label>
+                <div class="input-inner align-top">
+                    <span class="field-icon">📋</span>
+                    <textarea id="reason" name="reason" class="form-control-clean" rows="3" placeholder="Например: заболел" required></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn-purple">
+                <span class="btn-icon">✔</span> Отправить заявку
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+    /* Основной контейнер */
+    .form-main-container {
+        display: flex;
+        justify-content: center;
+        padding: 60px 20px;
+    }
+
+    /* Карточка формы */
+    .form-card {
+        background: #141320;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        width: 100%;
+        max-width: 500px;
+        padding: 40px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+        text-align: center;
+    }
+
+    /* Иконка */
+    .header-icon-box.purple {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+        margin: 0 auto 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #818cf820;
+        border: 1px solid #818cf840;
+    }
+
+    /* Заголовки */
+    .form-title { color: #fff; font-size: 1.8rem; margin-bottom: 8px; font-weight: 700; }
+    .form-info-text { color: #94a3b8; font-size: 0.85rem; margin-bottom: 30px; }
+
+    /* Группы ввода */
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+    .form-group label {
+        display: block;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Стили полей */
+    .input-inner {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+    }
+    .input-inner.disabled { opacity: 0.6; }
+    
+    .form-control-clean {
+        background: transparent;
+        border: none;
+        color: #fff;
+        width: 100%;
+        padding: 14px 0;
+        font-size: 0.95rem;
+        outline: none;
+    }
+    select.form-control-clean { cursor: pointer; }
+    select.form-control-clean option { background: #141320; color: #fff; }
+
+    .field-icon { margin-right: 12px; font-size: 1.1rem; opacity: 0.7; }
+    .req { color: #ef4444; }
+    .align-top { align-items: flex-start; }
+    .align-top .field-icon { margin-top: 14px; }
+
+    /* Кнопка */
+    .submit-btn-purple {
+        width: 100%;
+        padding: 16px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #818cf8, #6366f1);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .submit-btn-purple:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    }
+</style>
+{% endblock %}

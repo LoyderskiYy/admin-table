@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Админ-магазин | MineTable{% endblock %}
+
+{% block content %}
+<div class="shop-container">
+    <div class="shop-header">
+        <div class="header-left">
+            <div class="shop-brand-icon">
+                <i class="fas fa-shopping-basket"></i>
+                <div class="icon-glow"></div>
+            </div>
+            <div class="header-info">
+                <h1>Магазин администрации</h1>
+                <p>Доступно товаров: {{ items|length }}</p>
+            </div>
+        </div>
+        
+        <div class="header-right">
+            {% if session.get('admin_level', 0)|int >= 8 %}
+            <a href="{{ url_for('shop_admin') }}" class="manage-btn">
+                <i class="fas fa-cog"></i> Управление товарами
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="premium-balance-card">
+        <div class="balance-glass-effect"></div>
+        <div class="balance-content">
+            <div class="balance-left">
+                <div class="balance-icon-container">
+                    <i class="fas fa-wallet"></i>
+                    <div class="icon-pulse"></div>
+                </div>
+                <div class="balance-text">
+                    <span class="balance-label">Ваше состояние:</span>
+                    <div class="balance-value-wrapper">
+                        <span class="balance-amount">{{ user.admin_profile.points }}</span>
+                        <span class="balance-currency">🪙</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="balance-right">
+                <div class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Счет активен</span>
+                </div>
+                <div class="limit-info">
+                    <span>Лимит накопления: Отсутствует</span>
+                </div>
+            </div>
+        </div>
+        <div class="minimal-progress">
+            <div class="minimal-progress-fill" style="width: {{ (user.admin_profile.points / 5000 * 100) if user.admin_profile.points < 5000 else 100 }}%"></div>
+        </div>
+    </div>
+
+    <div class="shop-grid">
+        {% for item in items %}
+        <div class="shop-card {% if user.admin_level < item.min_level %}locked{% endif %}">
+            <div class="card-image" style="background-image: url('{{ item.image_url or 'https://i.imgur.com/8Qp6u7C.png' }}')">
+                <div class="price-tag">
+                    <span class="coin">🪙</span> {{ item.price }}
+                </div>
+
+                {% if session.get('admin_level', 0)|int >= 8 %}
+                <a href="{{ url_for('delete_shop_item', item_id=item.id) }}" 
+                   class="admin-delete-badge" 
+                   onclick="return confirm('Вы уверены, что хотите удалить этот товар?')">
+                    <i class="fas fa-trash-alt"></i>
+                    <span>Удалить</span>
+                </a>
+                {% endif %}
+
+                {% if user.admin_level < item.min_level %}
+                <div class="lock-overlay">
+                    <i class="fas fa-lock"></i>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div class="card-body">
+                <h3>{{ item.name }}</h3>
+                <p class="desc">{{ item.description }}</p>
+                
+                <div class="card-meta">
+                    <div class="meta-item">
+                        <span class="meta-label">Доступ:</span>
+                        <span class="meta-value">Lvl {{ item.min_level }}</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Лимит:</span>
+                        <span class="meta-value">{% if item.purchase_limit > 0 %}{{ item.purchase_limit }} шт.{% else %}∞{% endif %}</span>
+                    </div>
+                </div>
+
+                <form action="{{ url_for('buy_item', item_id=item.id) }}" method="POST">
+                    <button type="submit" class="buy-button" 
+                        {% if user.admin_profile.points < item.price or user.admin_level < item.min_level %}disabled{% endif %}>
+                        <i class="fas fa-shopping-cart"></i> 
+                        {% if user.admin_level < item.min_level %}
+                            Закрыто
+                        {% elif user.admin_profile.points < item.price %}
+                            Недостаточно
+                        {% else %}
+                            Купить
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-shop">
+            <i class="fas fa-folder-open"></i>
+            <p>Прилавок временно пуст</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    :root {
+        --bg-dark: #0f101a;
+        --card-bg: #161726;
+        --accent-purple: #5d5fef;
+        --text-gray: #8b949e;
+        --border-color: rgba(255, 255, 255, 0.05);
+        --status-green: #2ecc71;
+        --danger-red: #ff4757;
+    }
+
+    .shop-container { padding: 40px 20px; max-width: 1200px; margin: 0 auto; font-family: 'Inter', sans-serif; }
+
+    /* HEADER */
+    .shop-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+    .header-left { display: flex; align-items: center; gap: 20px; }
+    .shop-brand-icon { position: relative; background: var(--accent-purple); width: 54px; height: 54px; display: flex; align-items: center; justify-content: center; border-radius: 16px; color: #fff; }
+    .icon-glow { position: absolute; inset: 0; border-radius: 16px; background: var(--accent-purple); filter: blur(15px); opacity: 0.4; z-index: -1; }
+    .header-info h1 { margin: 0; font-size: 1.7rem; color: #fff; font-weight: 800; }
+
+    .manage-btn { background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); padding: 12px 24px; border-radius: 12px; color: var(--accent-purple); text-decoration: none; font-weight: 600; transition: 0.3s; }
+    .manage-btn:hover { background: rgba(93, 95, 239, 0.1); border-color: var(--accent-purple); }
+
+    /* BALANCE CARD */
+    .premium-balance-card { position: relative; background: #1c1d30; border-radius: 24px; padding: 32px; margin-bottom: 50px; overflow: hidden; border: 1px solid var(--border-color); }
+    .balance-content { display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 2; }
+    .balance-amount { font-size: 2.4rem; font-weight: 800; color: #fff; }
+    .status-indicator { display: inline-flex; align-items: center; gap: 8px; background: rgba(46, 204, 113, 0.1); padding: 8px 16px; border-radius: 100px; }
+    .status-dot { width: 8px; height: 8px; background: var(--status-green); border-radius: 50%; box-shadow: 0 0 12px var(--status-green); }
+    .status-text { color: var(--status-green); font-size: 0.75rem; font-weight: 800; text-transform: uppercase; }
+    .minimal-progress { position: absolute; bottom: 0; left: 0; width: 100%; height: 5px; background: rgba(255, 255, 255, 0.02); }
+    .minimal-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent-purple), #f3a91e); transition: width 1.5s; }
+
+    /* SHOP GRID & CARDS */
+    .shop-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; }
+    .shop-card { background: var(--card-bg); border-radius: 24px; overflow: hidden; border: 1px solid var(--border-color); transition: 0.3s; position: relative; }
+    .shop-card:hover { transform: translateY(-5px); }
+
+    .card-image { height: 200px; background-size: cover; background-position: center; position: relative; }
+    
+    /* ЦЕННИК */
+    .price-tag {
+        position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.7);
+        padding: 5px 12px; border-radius: 8px; font-weight: 700; color: #f3a91e;
+        backdrop-filter: blur(4px); border: 1px solid rgba(243, 169, 30, 0.3);
+    }
+
+    /* 🔥 ЯРКАЯ КНОПКА УДАЛЕНИЯ (ВСЕГДА ВИДНА) 🔥 */
+    .admin-delete-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 30;
+        background: rgba(255, 71, 87, 0.15);
+        color: #ff4757;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 71, 87, 0.4);
+        padding: 6px 14px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    .admin-delete-badge i {
+        font-size: 0.9rem;
+    }
+
+    .admin-delete-badge:hover {
+        background: #ff4757;
+        color: white;
+        transform: scale(1.05);
+        box-shadow: 0 0 20px rgba(255, 71, 87, 0.4);
+        border-color: transparent;
+    }
+
+    /* CARD BODY */
+    .card-body { padding: 25px; }
+    .card-body h3 { margin: 0 0 10px; color: #fff; font-size: 1.2rem; }
+    .desc { font-size: 0.85rem; color: var(--text-gray); margin-bottom: 20px; line-height: 1.4; }
+
+    .card-meta { display: flex; background: rgba(255, 255, 255, 0.03); border-radius: 12px; padding: 12px; margin-bottom: 20px; justify-content: space-around; }
+    .meta-label { font-size: 0.6rem; color: var(--text-gray); text-transform: uppercase; display: block; }
+    .meta-value { font-size: 0.85rem; color: #fff; font-weight: 600; }
+
+    .buy-button {
+        width: 100%; background: var(--accent-purple); color: white; border: none;
+        padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer;
+        transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .buy-button:hover:not(:disabled) { background: #4a4cd9; box-shadow: 0 8px 16px rgba(93, 95, 239, 0.2); }
+    .buy-button:disabled { background: #1e1f2e; color: #4e5069; cursor: not-allowed; }
+
+    .lock-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; font-size: 2rem; color: rgba(255,255,255,0.1); z-index: 5; }
+    .locked { opacity: 0.7; }
+</style>
+{% endblock %}

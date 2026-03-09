@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Мои формы — Admin Panel{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper">
+    
+    <div class="stats-grid top-stats">
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label">Всего форм</span>
+                <span class="m-value">{{ stats.total }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label" style="color: #4ade80;">Принято</span>
+                <span class="m-value" style="color: #4ade80;">{{ stats.accepted }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label" style="color: #fbbf24;">На рассмотрении</span>
+                <span class="m-value" style="color: #fbbf24;">{{ stats.pending }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label" style="color: #f87171;">Отклонено</span>
+                <span class="m-value" style="color: #f87171;">{{ stats.rejected }}</span>
+            </div>
+        </div>
+        <div class="mini-card">
+            <div class="m-data">
+                <span class="m-label">Удалено</span>
+                <span class="m-value">0</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="form-search" placeholder="Поиск по содержанию...">
+        </div>
+        <a href="{{ url_for('submit_form') }}" class="create-form-btn">
+            + Создать форму
+        </a>
+    </div>
+
+    <div class="card table-card">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Команда / Содержание</th>
+                        <th>Тип</th>
+                        <th>Статус</th>
+                        <th>Принял</th>
+                    </tr>
+                </thead>
+                <tbody id="forms-table-body">
+                    {% for sub in submissions %}
+                    <tr class="form-row">
+                        <td class="td-date">
+                            <div class="date-main">{{ sub.submitted_at.strftime('%d.%m.%y') }}</div>
+                            <div class="date-sub">{{ sub.submitted_at.strftime('%H:%M') }}</div>
+                        </td>
+                        <td class="td-content">
+                            <div class="content-text mono">
+                                {{ sub.content[:100] }}{% if sub.content|length > 100 %}...{% endif %}
+                            </div>
+                        </td>
+                        <td><span class="type-badge">Form</span></td>
+                        <td>
+                            <span class="status-pill status-{{ sub.status.lower() }}">
+                                {% if sub.status == 'Accepted' %}Принято
+                                {% elif sub.status == 'Pending' %}Ожидание
+                                {% elif sub.status == 'Rejected' %}Отклонено
+                                {% else %}{{ sub.status }}{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            {% if sub.status != 'Pending' and sub.accepter %}
+                            <div class="accepter-info">
+                                {% if sub.accepter.avatar %}
+                                    <img src="https://cdn.discordapp.com/avatars/{{ sub.accepter.discord_id }}/{{ sub.accepter.avatar }}.png?size=64" 
+                                         class="u-avatar-sm" alt="AV">
+                                {% else %}
+                                    <div class="u-avatar-sm">{{ sub.accepter.username[0]|upper }}</div>
+                                {% endif %}
+                                <span>{{ sub.accepter.username }}</span>
+                            </div>
+                            {% else %}
+                            <span style="color: var(--text-dim);">—</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 60px; color: var(--text-dim);">
+                            <div style="font-size: 2rem; margin-bottom: 10px;">📂</div>
+                            У вас пока нет отправленных форм
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --bg-main: #0b0a12;
+        --bg-card: #14121f;
+        --accent: #007bff;
+        --border: rgba(255, 255, 255, 0.05);
+        --text-dim: #94a3b8;
+    }
+
+    /* Сетка статистики */
+    .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 25px; }
+    .mini-card { background: var(--bg-card); padding: 15px 20px; border-radius: 8px; border: 1px solid var(--border); }
+    .m-label { display: block; color: var(--text-dim); font-size: 0.75rem; margin-bottom: 5px; }
+    .m-value { font-size: 1.4rem; font-weight: 700; color: #fff; }
+
+    /* Поиск и кнопка */
+    .action-bar { display: flex; justify-content: space-between; margin-bottom: 20px; gap: 15px; }
+    .search-box { position: relative; flex-grow: 1; max-width: 400px; }
+    .search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); opacity: 0.4; }
+    .search-box input { 
+        width: 100%; background: var(--bg-card); border: 1px solid var(--border); 
+        padding: 12px 15px 12px 40px; border-radius: 8px; color: white; outline: none;
+    }
+    .create-form-btn { 
+        background: var(--accent); color: white; text-decoration: none; 
+        padding: 0 25px; border-radius: 8px; font-weight: 600; 
+        display: flex; align-items: center; transition: 0.2s;
+    }
+    .create-form-btn:hover { filter: brightness(1.2); }
+
+    /* Стили таблицы */
+    .table-card { background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; padding: 15px 20px; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.02); }
+
+    .td-date { width: 110px; }
+    .date-main { font-weight: 600; font-size: 0.85rem; color: #fff; }
+    .date-sub { font-size: 0.75rem; color: var(--text-dim); }
+
+    .content-text { color: #e2e8f0; font-size: 0.85rem; opacity: 0.9; }
+    .mono { font-family: 'Consolas', 'Monaco', monospace; }
+
+    .type-badge { background: #2d2d3d; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; color: #fff; }
+
+    /* Статусы */
+    .status-pill { padding: 4px 12px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-block; }
+    .status-accepted { background: rgba(74, 222, 128, 0.1); color: #4ade80; }
+    .status-pending { background: rgba(251, 191, 36, 0.1); color: #fbbf24; }
+    .status-rejected { background: rgba(248, 113, 113, 0.1); color: #f87171; }
+
+    /* Инфо о проверявшем */
+    .accepter-info { display: flex; align-items: center; gap: 10px; font-size: 0.85rem; color: #fff; }
+    .u-avatar-sm { 
+        width: 28px; height: 28px; 
+        background: #2a283e; border-radius: 50%; 
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 0.75rem; font-weight: 700; color: #5e5ce6;
+        object-fit: cover; border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    @media (max-width: 1000px) {
+        .stats-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+</style>
+
+<script>
+    // Простой живой поиск по таблице
+    document.getElementById('form-search').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('.form-row');
+        
+        rows.forEach(row => {
+            const content = row.querySelector('.content-text').textContent.toLowerCase();
+            row.style.display = content.includes(query) ? '' : 'none';
+        });
+    });
+</script>
+{% endblock %}

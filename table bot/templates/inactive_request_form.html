@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Взятие неактива - Admin Panel{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+
+<div class="inactive-wrapper">
+    <div class="inactive-card">
+        <div class="card-header-icon">
+            <div class="calendar-icon">📅</div>
+        </div>
+        <h1 class="card-title">Взятие неактива</h1>
+        <p class="card-subtitle">Укажите период вашего отсутствия</p>
+
+        <form method="POST" class="inactive-form">
+            <div class="input-container">
+                <label class="input-label">Администратор</label>
+                <div class="input-wrapper disabled">
+                    <span class="field-icon">👤</span>
+                    <input type="text" value="{{ username }}" disabled>
+                </div>
+            </div>
+
+            <div class="checkbox-container">
+                <label class="custom-checkbox">
+                    <input type="checkbox" name="is_infinite" id="is_infinite">
+                    <span class="checkmark"></span>
+                    <span class="checkbox-label"><span class="icon-small">∞</span> На неопределённый срок</span>
+                </label>
+            </div>
+
+            <div class="input-container" id="date_range_container">
+                <label class="input-label">Период неактива <span class="required">*</span></label>
+                <div class="input-wrapper" id="date_wrapper">
+                    <span class="field-icon">🗓️</span>
+                    <input type="text" name="date_range" id="date_range" placeholder="Выберите диапазон в календаре..." required readonly>
+                </div>
+            </div>
+
+            <div class="input-container">
+                <label class="input-label">Причина неактива <span class="required">*</span></label>
+                <div class="input-wrapper align-top">
+                    <span class="field-icon">📋</span>
+                    <textarea name="reason" placeholder="Например: Учеба, семейные обстоятельства" rows="3" required></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span class="btn-check">✓</span> Отправить заявку
+            </button>
+        </form>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ru.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Инициализация календаря
+        // Внутри скрипта flatpickr
+const fp = flatpickr("#date_range", {
+    mode: "range",
+    dateFormat: "d.m.Y",
+    locale: "ru",
+    minDate: "today",
+    separator: " ", // Используем обычный пробел как разделитель
+    disableMobile: "true"
+});
+        const infiniteCheckbox = document.getElementById('is_infinite');
+        const dateInput = document.getElementById('date_range');
+        const dateWrapper = document.getElementById('date_wrapper');
+
+        infiniteCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                fp.clear(); 
+                dateInput.value = "Бессрочно";
+                dateInput.disabled = true;
+                dateInput.required = false;
+                dateWrapper.style.opacity = "0.4";
+                dateWrapper.style.pointerEvents = "none";
+            } else {
+                dateInput.value = "";
+                dateInput.disabled = false;
+                dateInput.required = true;
+                dateWrapper.style.opacity = "1";
+                dateWrapper.style.pointerEvents = "auto";
+            }
+        });
+    });
+</script>
+
+<style>
+    .inactive-wrapper { display: flex; justify-content: center; padding: 40px 20px; }
+    .inactive-card {
+        background: #14121f; border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px; width: 100%; max-width: 450px; padding: 35px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+    .calendar-icon {
+        background: #4ade80; width: 60px; height: 60px; border-radius: 15px;
+        display: flex; align-items: center; justify-content: center; 
+        font-size: 1.8rem; margin: 0 auto 20px;
+    }
+    .card-title { color: #fff; text-align: center; margin-bottom: 5px; font-size: 1.6rem; }
+    .card-subtitle { color: #94a3b8; text-align: center; font-size: 0.9rem; margin-bottom: 30px; }
+    
+    .input-container { margin-bottom: 20px; }
+    .input-label { display: block; color: #94a3b8; font-size: 0.8rem; margin-bottom: 8px; font-weight: 600; }
+    .input-wrapper {
+        background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px; display: flex; align-items: center; padding: 0 15px; transition: 0.3s;
+    }
+    .input-wrapper input, .input-wrapper textarea {
+        background: transparent; border: none; color: #fff; padding: 12px 0;
+        width: 100%; font-size: 0.95rem; outline: none;
+    }
+    .field-icon { margin-right: 12px; opacity: 0.6; }
+
+    .checkbox-container {
+        background: rgba(74, 222, 128, 0.05); border: 1px solid rgba(74, 222, 128, 0.1);
+        border-radius: 12px; padding: 12px 15px; margin-bottom: 20px;
+    }
+    .custom-checkbox { display: flex; align-items: center; cursor: pointer; color: #fff; }
+    .checkmark {
+        width: 20px; height: 20px; border: 2px solid #4ade80;
+        border-radius: 6px; margin-right: 12px; position: relative;
+    }
+    .custom-checkbox input:checked + .checkmark { background: #4ade80; }
+    .custom-checkbox input { display: none; }
+
+    .submit-btn {
+        background: #4ade80; color: #000; border: none; width: 100%; padding: 15px;
+        border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.2s;
+        margin-top: 10px;
+    }
+    .submit-btn:hover { background: #22c55e; transform: translateY(-2px); }
+    .align-top { align-items: flex-start; }
+    .align-top .field-icon { margin-top: 14px; }
+</style>
+{% endblock %}

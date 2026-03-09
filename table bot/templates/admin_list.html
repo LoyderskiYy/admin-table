@@ -1,0 +1,632 @@
+{% extends "base.html" %}
+
+{% block title %}Администрация | Панель управления{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="admin-container">
+    
+    <div class="admin-header">
+        <div class="title-group">
+            <h2><i class="fas fa-shield-halved"></i> Управление составом</h2>
+            <div class="stats-badge">
+                <span class="dot"></span>
+                Всего администраторов: <strong>{{ admins|length }}</strong>
+            </div>
+        </div>
+        
+        <div class="admin-controls">
+            <div class="search-wrapper">
+                <i class="fas fa-search"></i>
+                <input type="text" id="admin-search" placeholder="Поиск агента...">
+            </div>
+            
+            <div class="level-filter-wrapper">
+                <i class="fas fa-layer-group"></i>
+                <select id="filter-level">
+                    <option value="">Все ранги</option>
+                    {% for i in range(1, 11) %}<option value="{{ i }}">{{ i }} lvl</option>{% endfor %}
+                </select>
+                <i class="fas fa-chevron-down dropdown-arrow"></i>
+            </div>
+
+            {% if session.get("admin_level", 0) >= 7 %}
+                <a href="{{ url_for('admin_add') }}" class="btn-add">
+                    <i class="fas fa-plus"></i> <span>Добавить</span>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="glass-wrapper">
+        <table id="admins-table">
+            <thead>
+                <tr>
+                    <th onclick="sortTable(0)">Пользователь <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(1)" class="text-center">Уровень <i class="fas fa-sort"></i></th>
+                    <th>Должность</th>
+                    <th onclick="sortTable(3)" class="text-center">Баллов</th>
+                    <th onclick="sortTable(4)" class="text-center">Выговоры <i class="fas fa-sort"></i></th>
+                    <th onclick="sortTable(5)" class="text-center">Преды <i class="fas fa-sort"></i></th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                {% for admin in admins %}
+                <tr class="row-link animate-row" 
+                    data-href="{{ url_for('admin_profile', user_id=admin.user.id) }}" 
+                    data-level="{{ admin.user.admin_level }}"
+                    style="--delay: {{ loop.index0 * 0.05 }}s">
+                    
+                    <td>
+                        <div class="user-cell">
+                            <div class="avatar-container">
+                                {% if admin.user.avatar %}
+                                    <img src="https://cdn.discordapp.com/avatars/{{ admin.user.discord_id }}/{{ admin.user.avatar }}.png?size=64" class="main-avatar">
+                                {% else %}
+                                    <div class="avatar-placeholder">{{ admin.user.username[0]|upper }}</div>
+                                {% endif %}
+                                <div class="status-online"></div>
+                            </div>
+                            <div class="user-meta">
+                                <div class="user-name">
+                                    <span class="prefix">{{ admin.prefix or '-' }}</span>
+                                    {{ admin.user.username }}
+                                </div>
+                                <span class="user-id">#{{ admin.user.id }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    
+                    <td class="text-center">
+                        <div class="level-orb orb-{{ admin.user.admin_level }}">
+                            <span>{{ admin.user.admin_level }}</span>
+                        </div>
+                    </td>
+                    
+                    <td><span class="pos-tag">{{ admin.position or 'Отсутствует' }}</span></td>
+                    
+                    <td class="text-center">
+                        <div class="stat-pill points">
+                            <i class="fas fa-coins"></i> {{ admin.points }}
+                        </div>
+                    </td>
+                    
+                    <td class="text-center">
+                        <div class="punishment-badge repr">
+                            <i class="fas fa-gavel"></i> {{ admin.reprimands }}
+                        </div>
+                    </td>
+                    
+                    <td class="text-center">
+                        <div class="punishment-badge warn">
+                            <i class="fas fa-exclamation-triangle"></i> {{ admin.warnings }}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary: #6366f1;
+        --primary-glow: rgba(99, 102, 241, 0.4);
+        --bg-dark: #09090b;
+        --card-bg: rgba(24, 24, 27, 0.8);
+        --text-main: #f4f4f5;
+        --text-dim: #a1a1aa;
+        --text-muted: #9ca3af;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --border-color: rgba(255, 255, 255, 0.08);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        
+        /* Level Colors - Subtle but visible */
+        --level-blue-light: #67e8f9;
+        --level-blue-light-bg: rgba(103, 232, 249, 0.12);
+        --level-blue-light-border: rgba(103, 232, 249, 0.25);
+        
+        --level-orange: #fb923c;
+        --level-orange-bg: rgba(251, 146, 60, 0.12);
+        --level-orange-border: rgba(251, 146, 60, 0.25);
+        
+        --level-blue: #3b82f6;
+        --level-blue-bg: rgba(59, 130, 246, 0.12);
+        --level-blue-border: rgba(59, 130, 246, 0.25);
+        
+        --level-green: #4ade80;
+        --level-green-bg: rgba(74, 222, 128, 0.12);
+        --level-green-border: rgba(74, 222, 128, 0.25);
+        
+        --level-purple: #a78bfa;
+        --level-purple-bg: rgba(167, 139, 250, 0.12);
+        --level-purple-border: rgba(167, 139, 250, 0.25);
+        
+        --level-gold: #fbbf24;
+        --level-gold-glow: rgba(251, 191, 36, 0.4);
+        --level-gold-bg: rgba(251, 191, 36, 0.15);
+        --level-gold-border: rgba(251, 191, 36, 0.4);
+    }
+
+    .admin-container { 
+        max-width: 1100px; 
+        margin: 15px auto; 
+        padding: 0 15px;
+        font-family: 'Inter', system-ui, sans-serif;
+    }
+
+    /* Хедер */
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+        padding: 16px 20px;
+        border-radius: 14px;
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(10px);
+    }
+
+    .title-group h2 {
+        font-size: 1.1rem;
+        font-weight: 800;
+        margin-bottom: 4px;
+        background: linear-gradient(135deg, #fff 0%, #c7d2fe 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .stats-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+        padding: 4px 10px;
+        border-radius: 12px;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    .dot { 
+        width: 6px; 
+        height: 6px; 
+        background: var(--success); 
+        border-radius: 50%; 
+        box-shadow: 0 0 8px var(--success);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Управление */
+    .admin-controls { display: flex; gap: 10px; align-items: center; }
+
+    .search-wrapper, .level-filter-wrapper { position: relative; }
+    .search-wrapper i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.75rem; }
+    .level-filter-wrapper i:first-child { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.7rem; }
+    
+    .search-wrapper input, .level-filter-wrapper select {
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        border: 1px solid var(--glass-border);
+        color: white;
+        padding: 8px 12px 8px 32px;
+        border-radius: 8px;
+        font-size: 0.75rem;
+        transition: all 0.3s ease;
+        height: 36px;
+    }
+
+    .level-filter-wrapper select { 
+        padding-left: 30px; 
+        padding-right: 28px;
+        cursor: pointer; 
+        appearance: none; 
+    }
+    
+    .dropdown-arrow {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 0.6rem;
+        color: var(--text-muted);
+        pointer-events: none;
+    }
+
+    .search-wrapper input:focus { 
+        border-color: rgba(99, 102, 241, 0.6); 
+        box-shadow: 0 0 15px rgba(99, 102, 241, 0.2); 
+        outline: none;
+        background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: white;
+        text-decoration: none;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        border: none;
+    }
+
+    .btn-add:hover { 
+        transform: translateY(-2px); 
+        box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+    }
+
+    /* Таблица */
+    .glass-wrapper {
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+        backdrop-filter: blur(15px);
+        border-radius: 14px;
+        border: 1px solid var(--glass-border);
+        overflow: hidden;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+    }
+
+    table { 
+        width: 100%; 
+        border-collapse: collapse; 
+    }
+    
+    th {
+        padding: 12px 16px;
+        text-align: left;
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.08));
+        cursor: pointer;
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--glass-border);
+    }
+
+    th:hover { 
+        color: white;
+        background: linear-gradient(180deg, rgba(99, 102, 241, 0.15), rgba(99, 102, 241, 0.05));
+    }
+
+    td { 
+        padding: 10px 16px; 
+        border-bottom: 1px solid rgba(255,255,255,0.03);
+        transition: all 0.2s ease;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+
+    .row-link { 
+        transition: all 0.3s ease; 
+        cursor: pointer;
+    }
+    .row-link:hover { 
+        background: linear-gradient(90deg, rgba(99, 102, 241, 0.1), rgba(99, 102, 241, 0.03));
+    }
+
+    /* Анимация появления */
+    .animate-row {
+        opacity: 0;
+        transform: translateY(10px);
+        animation: fadeIn 0.4s forwards;
+        animation-delay: var(--delay);
+    }
+
+    @keyframes fadeIn {
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Юзер-ячейка */
+    .user-cell { display: flex; align-items: center; gap: 12px; }
+    .avatar-container { position: relative; }
+    .main-avatar { 
+        width: 32px; 
+        height: 32px; 
+        border-radius: 10px; 
+        object-fit: cover; 
+        border: 2px solid rgba(99, 102, 241, 0.3);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    }
+    .avatar-placeholder { 
+        width: 32px; 
+        height: 32px; 
+        border-radius: 10px; 
+        background: linear-gradient(135deg, #6366f1, #8b5cf6); 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-weight: 700; 
+        font-size: 0.75rem;
+        color: white;
+        box-shadow: 0 3px 10px rgba(99, 102, 241, 0.3);
+    }
+    
+    .status-online { 
+        position: absolute; 
+        bottom: -2px; 
+        right: -2px; 
+        width: 10px; 
+        height: 10px; 
+        background: var(--success); 
+        border: 2px solid #0a0a14; 
+        border-radius: 50%;
+        box-shadow: 0 0 8px var(--success);
+    }
+
+    .user-name { font-weight: 600; font-size: 0.85rem; margin-bottom: 2px; }
+    .prefix { 
+        font-size: 0.6rem; 
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.1)); 
+        color: #a5b4fc; 
+        padding: 2px 6px; 
+        border-radius: 4px; 
+        margin-right: 6px;
+        font-family: 'JetBrains Mono', monospace;
+        border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+    .user-id { font-size: 0.65rem; color: var(--text-muted); font-family: monospace; }
+
+    /* Ранги и бейджи */
+    .level-orb {
+        display: inline-flex;
+        width: 36px;
+        height: 36px;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 0.8rem;
+        background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+        border: 1px solid var(--glass-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .level-orb::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50%;
+        background: linear-gradient(180deg, rgba(255,255,255,0.15), transparent);
+        border-radius: 10px 10px 0 0;
+    }
+
+    .level-orb:hover {
+        transform: scale(1.1);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    }
+
+    .level-orb span {
+        position: relative;
+        z-index: 1;
+    }
+
+    /* Level 1-2: Голубой (Light Blue) - Subtle */
+    .orb-1, .orb-2 { 
+        color: var(--level-blue-light); 
+        border-color: var(--level-blue-light-border); 
+        background: var(--level-blue-light-bg);
+    }
+    .orb-1:hover, .orb-2:hover {
+        box-shadow: 0 4px 15px rgba(103, 232, 249, 0.2);
+    }
+
+    /* Level 3-4: Оранжевый (Orange) - Moderate */
+    .orb-3, .orb-4 { 
+        color: var(--level-orange); 
+        border-color: var(--level-orange-border); 
+        background: var(--level-orange-bg);
+    }
+    .orb-3:hover, .orb-4:hover {
+        box-shadow: 0 4px 15px rgba(251, 146, 60, 0.25);
+    }
+
+    /* Level 5-6: Зелёный (Green) - Moderate */
+    .orb-5, .orb-6 { 
+        color: var(--level-green); 
+        border-color: var(--level-green-border); 
+        background: var(--level-green-bg);
+    }
+    .orb-5:hover, .orb-6:hover {
+        box-shadow: 0 4px 15px rgba(74, 222, 128, 0.25);
+    }
+
+    /* Level 7-8: Фиолетовый (Purple) - Moderate */
+    .orb-7, .orb-8 { 
+        color: var(--level-purple); 
+        border-color: var(--level-purple-border); 
+        background: var(--level-purple-bg);
+    }
+    .orb-7:hover, .orb-8:hover {
+        box-shadow: 0 4px 15px rgba(167, 139, 250, 0.25);
+    }
+
+    /* Level 9-10: Золотой (Gold) - Prominent/Glowing */
+    .orb-9, .orb-10 { 
+        color: var(--level-gold); 
+        border-color: var(--level-gold-border); 
+        background: var(--level-gold-bg);
+        box-shadow: 0 0 20px var(--level-gold-glow), inset 0 0 15px rgba(251, 191, 36, 0.1);
+        animation: goldPulse 3s ease-in-out infinite;
+    }
+    
+    .orb-9::after, .orb-10::after {
+        content: '★';
+        position: absolute;
+        top: -4px;
+        right: -4px;
+        font-size: 0.55rem;
+        color: var(--level-gold);
+        text-shadow: 0 0 8px var(--level-gold);
+    }
+    
+    .orb-9:hover, .orb-10:hover {
+        transform: scale(1.15);
+        box-shadow: 0 0 30px var(--level-gold-glow), inset 0 0 20px rgba(251, 191, 36, 0.15);
+    }
+
+    @keyframes goldPulse {
+        0%, 100% { box-shadow: 0 0 15px rgba(251, 191, 36, 0.3), inset 0 0 10px rgba(251, 191, 36, 0.08); }
+        50% { box-shadow: 0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(251, 191, 36, 0.12); }
+    }
+
+    .pos-tag { 
+        font-size: 0.8rem; 
+        color: var(--text-muted); 
+        background: linear-gradient(135deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01)); 
+        padding: 6px 12px; 
+        border-radius: 10px;
+        border: 1px solid var(--glass-border);
+    }
+
+    .stat-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+    }
+    .points { 
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05)); 
+        color: #34d399; 
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .punishment-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        min-width: 50px;
+    }
+    .punishment-badge i { font-size: 0.75rem; }
+    .repr { 
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); 
+        color: #f87171; 
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+    .warn { 
+        background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05)); 
+        color: #fbbf24; 
+        border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .punishment-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, rgba(0,0,0,0.2), rgba(0,0,0,0.1));
+        padding: 6px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--glass-border);
+    }
+    .punish-item { font-weight: 700; font-size: 0.85rem; }
+    .repr { color: #f87171; }
+    .warn { color: #fbbf24; }
+    .punish-divider { color: rgba(255,255,255,0.1); }
+
+    .text-center { text-align: center; }
+
+    /* Адаптив */
+    @media (max-width: 850px) {
+        .admin-header { flex-direction: column; align-items: flex-start; gap: 20px; }
+        .admin-controls { width: 100%; flex-wrap: wrap; }
+        .search-wrapper { flex-grow: 1; }
+        th:nth-child(3), td:nth-child(3) { display: none; }
+    }
+</style>
+
+<script>
+// (Скрипты поиска и сортировки остаются такими же, они универсальны)
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('admin-search');
+    const levelFilter = document.getElementById('filter-level');
+    const tableBody = document.getElementById('table-body');
+
+    function updateFilters() {
+        const query = searchInput.value.toLowerCase();
+        const level = levelFilter.value;
+        const rows = tableBody.querySelectorAll('tr');
+
+        rows.forEach(row => {
+            const text = row.innerText.toLowerCase();
+            const rowLevel = row.getAttribute('data-level');
+            const matchSearch = text.includes(query);
+            const matchLevel = level === "" || rowLevel === level;
+            
+            if (matchSearch && matchLevel) {
+                row.style.display = '';
+                row.classList.add('animate-row');
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', updateFilters);
+    levelFilter.addEventListener('change', updateFilters);
+
+    tableBody.addEventListener('click', (e) => {
+        const row = e.target.closest('.row-link');
+        if (row && !e.target.closest('a')) window.location.href = row.getAttribute('data-href');
+    });
+});
+
+function sortTable(n) {
+    const table = document.getElementById("admins-table");
+    let rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+    switching = true; dir = "asc"; 
+    while (switching) {
+        switching = false; rows = table.rows;
+        for (i = 1; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[n];
+            y = rows[i+1].getElementsByTagName("TD")[n];
+            let vx = x.innerText.toLowerCase().replace(/[^0-9.]/g, '');
+            let vy = y.innerText.toLowerCase().replace(/[^0-9.]/g, '');
+            
+            if (!isNaN(parseFloat(vx)) && vx !== "") { 
+                vx = parseFloat(vx); vy = parseFloat(vy); 
+            } else {
+                vx = x.innerText.toLowerCase();
+                vy = y.innerText.toLowerCase();
+            }
+
+            if (dir == "asc" ? vx > vy : vx < vy) { shouldSwitch = true; break; }
+        }
+        if (shouldSwitch) { 
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]); 
+            switching = true; switchcount++; 
+        } else if (switchcount == 0 && dir == "asc") { 
+            dir = "desc"; switching = true; 
+        }
+    }
+}
+</script>
+{% endblock %}

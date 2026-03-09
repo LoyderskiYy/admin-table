@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/logo.png') }}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Страница не найдена</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-bg: #0f0f1a;
+            --sidebar-border: rgba(255, 255, 255, 0.06);
+            --item-hover: rgba(255, 255, 255, 0.04);
+            --accent-color: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --danger-color: #ff3b5c;
+            --card-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #080810;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: 
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(99, 102, 241, 0.25), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(168, 85, 247, 0.2), transparent),
+                radial-gradient(ellipse 50% 30% at 90% 0%, rgba(236, 72, 153, 0.15), transparent),
+                radial-gradient(ellipse 40% 40% at 0% 100%, rgba(59, 130, 246, 0.15), transparent),
+                linear-gradient(180deg, #080810 0%, #0c0c18 100%);
+            background-attachment: fixed;
+        }
+
+        .error-container {
+            text-align: center;
+            padding: 40px;
+            max-width: 600px;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .error-code {
+            font-size: 180px;
+            font-weight: 700;
+            line-height: 1;
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 0 80px rgba(99, 102, 241, 0.5);
+        }
+
+        .error-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-main);
+        }
+
+        .error-description {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .illustration {
+            margin-bottom: 30px;
+        }
+
+        .illustration svg {
+            width: 200px;
+            height: 200px;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 640px) {
+            .error-code {
+                font-size: 120px;
+            }
+
+            .error-title {
+                font-size: 24px;
+            }
+
+            .error-description {
+                font-size: 16px;
+            }
+
+            .error-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="illustration">
+            <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="80" stroke="url(#gradient)" stroke-width="8" stroke-dasharray="20 10" opacity="0.3"/>
+                <circle cx="100" cy="100" r="60" stroke="url(#gradient)" stroke-width="4" opacity="0.5"/>
+                <path d="M70 90 L90 110 L130 70" stroke="#6366f1" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" opacity="0.2"/>
+                <circle cx="100" cy="100" r="20" fill="#6366f1" opacity="0.1"/>
+                <circle cx="100" cy="60" r="8" fill="#6366f1"/>
+                <circle cx="140" cy="90" r="6" fill="#a855f7"/>
+                <circle cx="60" cy="110" r="5" fill="#ec4899"/>
+                <defs>
+                    <linearGradient id="gradient" x1="0" y1="0" x2="200" y2="200">
+                        <stop offset="0%" stop-color="#6366f1"/>
+                        <stop offset="50%" stop-color="#a855f7"/>
+                        <stop offset="100%" stop-color="#ec4899"/>
+                    </linearGradient>
+                </defs>
+            </svg>
+        </div>
+        
+        <div class="error-code">404</div>
+        <h1 class="error-title">Страница не найдена</h1>
+        <p class="error-description">
+            Извините, запрашиваемая страница не существует или была перемещена.
+            Возможно, вы ввели неправильный адрес или страница была удалена.
+        </p>
+        
+        <div class="error-actions">
+            <a href="{{ url_for('index') }}" class="btn btn-primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                    <polyline points="9 22 9 12 15 12 15 22"/>
+                </svg>
+                На главную
+            </a>
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                Назад
+            </a>
+        </div>
+    </div>
+</body>
+</html>

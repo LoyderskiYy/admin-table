@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Управление магазином{% endblock %}
+{% block content %}
+<div class="admin-shop-container" style="max-width: 800px; margin: 0 auto; color: white;">
+    <h2>➕ Добавить товар в магазин</h2>
+    <form method="POST" class="admin-form" style="background: #161521; padding: 30px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+        <div class="form-group">
+            <label>Название товара</label>
+            <input type="text" name="name" required placeholder="Например: Снятие выговора">
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Стоимость (🪙 баллы)</label>
+                <input type="number" name="price" required placeholder="500">
+            </div>
+            <div class="form-group">
+                <label>Мин. уровень админки</label>
+                <input type="number" name="min_level" min="1" max="10" required placeholder="1">
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+                <label>Лимит на юзера (0 - нет)</label>
+                <input type="number" name="purchase_limit" value="0">
+            </div>
+            <div class="form-group">
+                <label>URL картинки</label>
+                <input type="text" name="image_url" placeholder="https://...">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>Описание</label>
+            <textarea name="description" rows="3" placeholder="Что получит админ после покупки?"></textarea>
+        </div>
+
+        <button type="submit" class="save-btn">🚀 Опубликовать в магазине</button>
+    </form>
+</div>
+
+<style>
+    .admin-form .form-group { margin-bottom: 20px; }
+    .admin-form label { display: block; margin-bottom: 8px; color: #8b949e; font-size: 0.9rem; }
+    .admin-form input, .admin-form textarea {
+        width: 100%; padding: 12px; background: #0d1117; border: 1px solid #30363d; border-radius: 10px; color: white;
+    }
+    .save-btn { width: 100%; padding: 15px; background: #238636; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+</style>
+{% endblock %}

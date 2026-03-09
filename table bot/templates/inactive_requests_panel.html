@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Панель заявок - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper" style="padding: 30px;">
+    <div class="page-header" style="margin-bottom: 30px;">
+        <h1 style="color: #fff; margin: 0;">Заявки на неактив</h1>
+        <p style="color: #94a3b8;">Управление отсутствием персонала</p>
+    </div>
+
+    <div class="table-card" style="background: #14121f; border-radius: 15px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <th style="padding: 15px 20px; text-align: left; color: #94a3b8; font-size: 0.8rem;">Администратор</th>
+                    <th style="padding: 15px 20px; text-align: left; color: #94a3b8; font-size: 0.8rem;">Период</th>
+                    <th style="padding: 15px 20px; text-align: left; color: #94a3b8; font-size: 0.8rem;">Причина</th>
+                    <th style="padding: 15px 20px; text-align: center; color: #94a3b8; font-size: 0.8rem;">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.02);">
+                    <td style="padding: 15px 20px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            {% if req.user and req.user.avatar %}
+                                <img src="https://cdn.discordapp.com/avatars/{{ req.user.discord_id }}/{{ req.user.avatar }}.png" style="width: 35px; height: 35px; border-radius: 50%;">
+                            {% else %}
+                                <div style="width: 35px; height: 35px; border-radius: 50%; background: #2d3748; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.8rem;">
+                                    {{ req.user.username[0]|upper if req.user else '?' }}
+                                </div>
+                            {% endif %}
+                            <span style="color: #fff; font-weight: 500;">{{ req.user.username if req.user else 'Система' }}</span>
+                        </div>
+                    </td>
+                    <td style="padding: 15px 20px;">
+                        {% if req.end_date.year == 2099 %}
+                            <span style="background: rgba(251, 191, 36, 0.1); color: #fbbf24; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; border: 1px solid rgba(251, 191, 36, 0.2);">
+                                <b>∞</b> Бессрочно
+                            </span>
+                        {% else %}
+                            <span style="color: #e2e8f0; font-size: 0.9rem;">
+                                {{ req.start_date.strftime('%d.%m.%Y') }} — {{ req.end_date.strftime('%d.%m.%Y') }}
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 15px 20px; color: #94a3b8; font-size: 0.9rem;">
+                        {{ req.reason }}
+                    </td>
+                    <td style="padding: 15px 20px; text-align: center;">
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <a href="{{ url_for('process_inactive_request', request_id=req.id, action='approve') }}" 
+                               style="background: #065f46; color: #34d399; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">Одобрить</a>
+                            <a href="{{ url_for('process_inactive_request', request_id=req.id, action='deny') }}" 
+                               style="background: #7f1d1d; color: #f87171; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: 600;">Отказать</a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 50px; text-align: center; color: #64748b;">
+                        Нет активных заявок на рассмотрении.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

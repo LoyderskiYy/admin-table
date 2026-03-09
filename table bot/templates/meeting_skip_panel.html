@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Панель заявок - Admin Panel{% endblock %}
+
+{% block content %}
+<div class="dashboard-wrapper" style="padding: 30px; font-family: 'Inter', sans-serif;">
+    <div class="page-header" style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+        <div style="background: #818cf820; padding: 12px; border-radius: 12px; border: 1px solid #818cf840;">
+            <span style="font-size: 1.5rem;">📅</span>
+        </div>
+        <div>
+            <h1 style="color: #fff; margin: 0; font-size: 1.8rem; font-weight: 700;">Пропуски собраний</h1>
+            <p style="color: #94a3b8; margin: 0; font-size: 0.9rem;">Рассмотрение заявок от администраторов</p>
+        </div>
+    </div>
+
+    <div class="table-card" style="background: #141320; border-radius: 20px; border: 1px solid rgba(255,255,255,0.08); overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.08);">
+                    <th style="padding: 18px 25px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Администратор</th>
+                    <th style="padding: 18px 25px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Дата подачи</th>
+                    <th style="padding: 18px 25px; text-align: left; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Причина</th>
+                    <th style="padding: 18px 25px; text-align: center; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;">Действие</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for req in requests %}
+                <tr class="table-row" style="border-bottom: 1px solid rgba(255,255,255,0.03); transition: 0.3s;">
+                    <td style="padding: 15px 25px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="position: relative;">
+                                {% if req.user and req.user.avatar %}
+                                    <img src="https://cdn.discordapp.com/avatars/{{ req.user.discord_id }}/{{ req.user.avatar }}.png" 
+                                         style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                                {% else %}
+                                    <div style="width: 40px; height: 40px; border-radius: 12px; background: #2a283e; display: flex; align-items: center; justify-content: center; color: #818cf8; font-weight: 700;">
+                                        {{ req.user.username[0]|upper if req.user else '?' }}
+                                    </div>
+                                {% endif %}
+                                <div style="position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; background: #4ade80; border: 2px solid #141320; border-radius: 50%;"></div>
+                            </div>
+                            <div>
+                                <div style="color: #fff; font-weight: 600; font-size: 0.9rem;">{{ req.user.username if req.user else 'Неизвестно' }}</div>
+                                <div style="color: #64748b; font-size: 0.75rem;">ID: {{ req.user.discord_id[:12] }}...</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 15px 25px;">
+                        <div style="color: #e2e8f0; font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">
+                            <span style="opacity: 0.6;">🕒</span> {{ req.submitted_at.strftime('%d.%m.%Y') }}
+                        </div>
+                    </td>
+                    <td style="padding: 15px 25px;">
+                        <div style="max-width: 300px; color: #94a3b8; font-size: 0.85rem; line-height: 1.5; background: rgba(255,255,255,0.02); padding: 8px 12px; border-radius: 8px;">
+                            {{ req.reason }}
+                        </div>
+                    </td>
+                    <td style="padding: 15px 25px; text-align: center;">
+                        <div style="display: flex; gap: 10px; justify-content: center;">
+                            <a href="{{ url_for('process_meeting_skip_request', request_id=req.id, action='approve') }}" 
+                               class="action-btn approve">
+                                Одобрить
+                            </a>
+                            <a href="{{ url_for('process_meeting_skip_request', request_id=req.id, action='deny') }}" 
+                               class="action-btn deny">
+                                Отказать
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" style="padding: 60px; text-align: center;">
+                        <div style="opacity: 0.2; font-size: 3rem; margin-bottom: 10px;">📥</div>
+                        <div style="color: #64748b; font-size: 0.95rem;">Заявок на пропуск собрания не найдено</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<style>
+    .table-row:hover {
+        background: rgba(255, 255, 255, 0.015);
+    }
+
+    .action-btn {
+        padding: 8px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.8rem;
+        font-weight: 700;
+        transition: 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .approve {
+        background: rgba(74, 222, 128, 0.1);
+        color: #4ade80;
+        border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    .approve:hover {
+        background: #4ade80;
+        color: #064e3b;
+        transform: translateY(-2px);
+    }
+
+    .deny {
+        background: rgba(248, 113, 113, 0.1);
+        color: #f87171;
+        border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+
+    .deny:hover {
+        background: #f87171;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
